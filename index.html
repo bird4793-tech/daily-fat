@@ -1,15 +1,9 @@
-這就幫您把最靈魂的「客製化口味勾選（加辣、加生蒜、加蔥花、加九層塔）」與彈出視窗功能補回來！
-
-請直接將下方這段**包含客製化互動視窗的完整 66 道惡搞鹽酥雞程式碼**完整複製，貼回您 GitHub 倉庫最外層的 `index.html` 檔案中覆蓋儲存：
-
-```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日日胖，肥胖加油站點餐系統</title>
-    <!-- 引入 Noto Serif TC 字體呈現日系紙本 Zine 風格 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script>
@@ -21,34 +15,20 @@
                         mono: ['"JetBrains Mono"', 'monospace'],
                     },
                     colors: {
-                        zine: {
-                            paper: '#F4F1EA',
-                            dark: '#1A1918',
-                            accent: '#D32F2F',
-                            muted: '#78716C',
-                            border: '#1A1918',
-                        }
+                        zine: { paper: '#F4F1EA', dark: '#1A1918', accent: '#D32F2F', muted: '#78716C', border: '#1A1918' }
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            background-color: #F4F1EA;
-            color: #1A1918;
-            font-family: 'Noto Serif TC', serif;
-        }
+        body { background-color: #F4F1EA; color: #1A1918; font-family: 'Noto Serif TC', serif; }
         .zine-border { border: 2px solid #1A1918; }
         .zine-border-b { border-bottom: 2px solid #1A1918; }
         .zine-border-r { border-right: 2px solid #1A1918; }
         .zine-shadow { box-shadow: 4px 4px 0px #1A1918; }
         .zine-shadow-sm { box-shadow: 2px 2px 0px #1A1918; }
-        .stamp {
-            display: inline-block; padding: 0.15rem 0.5rem; border: 2px solid #D32F2F;
-            color: #D32F2F; font-weight: 900; text-transform: uppercase;
-            transform: rotate(-3deg); font-size: 0.75rem; letter-spacing: 0.05em;
-        }
+        .stamp { display: inline-block; padding: 0.15rem 0.5rem; border: 2px solid #D32F2F; color: #D32F2F; font-weight: 900; text-transform: uppercase; transform: rotate(-3deg); font-size: 0.75rem; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F4F1EA; border-left: 2px solid #1A1918; }
         ::-webkit-scrollbar-thumb { background: #1A1918; }
@@ -56,7 +36,6 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-zine-accent selection:text-white">
 
-    <!-- 頂部公告 / 標題列 -->
     <header class="zine-border-b bg-zine-paper sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-2">
             <div class="flex items-center gap-3">
@@ -71,10 +50,7 @@
         </div>
     </header>
 
-    <!-- 主體內容區 (雙欄 Layout) -->
     <main class="max-w-7xl mx-auto w-full flex-grow grid grid-cols-1 lg:grid-cols-12">
-        
-        <!-- 左側：66道鹽酥雞攤菜單區 (佔 8 欄) -->
         <div class="lg:col-span-8 p-4 md:p-6 zine-border-r flex flex-col">
             <div class="mb-6 flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-grow">
@@ -98,7 +74,6 @@
             <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- 右側：點餐傳票 / 購物車區 (佔 4 欄) -->
         <div class="lg:col-span-4 bg-white p-4 md:p-6 flex flex-col justify-between">
             <div>
                 <div class="zine-border-b pb-3 mb-4 flex justify-between items-center">
@@ -112,7 +87,7 @@
 
             <div class="border-t-2 border-zine-dark pt-4 mt-auto">
                 <div class="space-y-3 mb-4">
-                    <div><label class="block text-xs font-mono font-bold mb-1">取餐人姓名 / 綽號 *</label><input type="text" id="customerName" placeholder="例如：快樂肥宅" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                    <div><label class="block text-xs font-mono font-bold mb-1">取餐人姓名 *</label><input type="text" id="customerName" placeholder="例如：快樂肥宅" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
                     <div><label class="block text-xs font-mono font-bold mb-1">聯絡電話 *</label><input type="tel" id="customerPhone" placeholder="0912-345-678" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
                     <div><label class="block text-xs font-mono font-bold mb-1">整體備註事項</label><input type="text" id="orderRemark" placeholder="例如：趕時間、醬汁另外裝..." class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
                 </div>
@@ -199,7 +174,6 @@
         </div>
     </div>
 
-    <!-- JavaScript 邏輯：66道搞笑菜單與客製化購物車系統 -->
     <script>
         const menuItems = [
             { id: 1, name: "比臉還大黃金雞排", price: 85, category: "chicken", desc: "減肥永遠是明天的事，先啃再說。", tag: "罪惡之首" },
@@ -330,7 +304,6 @@
             renderMenu(filtered);
         }
 
-        // 開啟客製化互動視窗
         function openCustomModal(id) {
             currentSelectedItem = menuItems.find(i => i.id === id);
             if(!currentSelectedItem) return;
@@ -339,7 +312,6 @@
             document.getElementById('modalItemName').innerText = currentSelectedItem.name;
             document.getElementById('modalQty').innerText = currentModalQty;
 
-            // 預設選項
             document.querySelector('input[name="flavor"][value="胡椒、甘梅"]').checked = true;
             document.getElementById('optSpicy').checked = false;
             document.getElementById('optGarlic').checked = false;
@@ -360,7 +332,6 @@
             document.getElementById('modalQty').innerText = currentModalQty;
         }
 
-        // 確認加入購物車（包含口味與配料）
         function confirmAddToCart() {
             if(!currentSelectedItem) return;
 
@@ -454,29 +425,35 @@
 
             const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const orderDetails = cart.map(i => `${i.name} x${i.qty} (${i.flavor}${i.extras.length ? '/' + i.extras.join(',') : ''})`).join('； ');
+            const orderNo = '#' + Math.floor(100 + Math.random() * 900);
 
+            // 確保這裡的屬性名稱 (name, phone, items, total, remark, orderNo) 與後端 GAS 完全對應
             const orderData = {
                 name: name,
                 phone: phone,
                 items: orderDetails,
                 total: totalPrice,
                 remark: remark || '無',
+                orderNo: orderNo,
                 timestamp: new Date().toLocaleString()
             };
 
             if(!gasWebhookUrl) {
-                alert(`🎉 模擬訂單送出成功！\n\n姓名：${name}\n電話：${phone}\n品項：\n${orderDetails}\n總金額：$${totalPrice} NTD`);
+                alert(`🎉 模擬訂單送出成功！\n\n訂單編號：${orderNo}\n姓名：${name}\n電話：${phone}\n品項：\n${orderDetails}\n總金額：$${totalPrice} NTD`);
                 cart = []; updateCartUI(); return;
             }
 
             try {
-                await fetch(gasWebhookUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
-                alert(`🚀 訂單已成功送出並同步至 Google 試算表！`);
+                await fetch(gasWebhookUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(orderData) 
+                });
+                alert(`🚀 訂單 ${orderNo} 已成功送出並同步至 Google 試算表！`);
                 cart = []; updateCartUI();
             } catch (error) { alert('❌ 傳票發送失敗，請檢查網路。'); }
         }
     </script>
 </body>
 </html>
-
-```
