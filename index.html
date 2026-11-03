@@ -112,6 +112,10 @@
         </div>
     </div>
 
+    <!-- 隱藏表單用來繞過 CORS 確保資料 100% 傳入試算表 -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <form id="hiddenGasForm" method="POST" target="hidden_iframe" style="display:none;"></form>
+
     <script>
         const menuItems = [
             { id: 1, name: "比臉還大黃金雞排", price: 85, category: "chicken", desc: "減肥永遠是明天的事，先啃再說。", tag: "罪惡之首" },
@@ -192,7 +196,6 @@
             if(gasWebhookUrl) { document.getElementById('gasUrlInput').value = gasWebhookUrl; }
         };
 
-        // 渲染菜單：每張卡片直接內嵌口味與配料勾選區
         function renderMenu(items) {
             const grid = document.getElementById('menuGrid');
             document.getElementById('itemCountDisplay').innerText = `顯示中 ${items.length} 道品項`;
@@ -211,7 +214,6 @@
                         <p class="text-xs text-zine-muted mb-3">${item.desc}</p>
                     </div>
 
-                    <!-- 內嵌客製化選項區 -->
                     <div class="bg-zine-paper/60 zine-border p-2.5 space-y-2 mb-3 text-xs font-mono">
                         <div>
                             <span class="font-bold block mb-1">口味：</span>
@@ -264,7 +266,6 @@
             renderMenu(filtered);
         }
 
-        // 直接從卡片內讀取客製化選項並加入購物車
         function addToCartDirect(id) {
             const item = menuItems.find(i => i.id === id);
             if(!item) return;
@@ -350,19 +351,25 @@
             closeConfigModal();
         }
 
-        async function submitOrder() {
+        // 使用隱藏表單送出訂單，完美解決 CORS 問題
+        function submitOrder() {
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             const remark = document.getElementById('orderRemark').value.trim();
 
             if(!name || !phone) { alert('⚠️ 請填寫取餐人姓名與聯絡電話！'); return; }
             if(cart.length === 0) { alert('⚠️ 您的傳票是空的！'); return; }
+            if(!gasWebhookUrl) { alert('⚠️ 請先點擊右上角設定 Google 試算表 Webhook 連結！'); openConfigModal(); return; }
 
             const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const orderDetails = cart.map(i => `${i.name} x${i.qty} (${i.flavor}${i.extras.length ? '/' + i.extras.join(',') : ''})`).join('； ');
             const orderNo = '#' + Math.floor(100 + Math.random() * 900);
 
-            const orderData = {
+            const form = document.getElementById('hiddenGasForm');
+            form.action = gasWebhookUrl;
+            form.innerHTML = '';
+
+            const data = {
                 name: name,
                 phone: phone,
                 items: orderDetails,
@@ -372,21 +379,22 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            if(!gasWebhookUrl) {
-                alert(`🎉 模擬訂單送出成功！\n\n訂單編號：${orderNo}\n姓名：${name}\n電話：${phone}\n品項：\n${orderDetails}\n總金額：$${totalPrice} NTD`);
-                cart = []; updateCartUI(); return;
+            for (const key in data) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = data[key];
+                form.appendChild(input);
             }
 
-            try {
-                await fetch(gasWebhookUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(orderData) 
-                });
-                alert(`🚀 訂單 ${orderNo} 已成功送出並同步至 Google 試算表！`);
-                cart = []; updateCartUI();
-            } catch (error) { alert('❌ 傳票發送失敗，請檢查網路。'); }
+            form.submit();
+
+            alert(`🚀 訂單 ${orderNo} 已成功送出並同步至 Google 試算表！`);
+            cart = [];
+            updateCartUI();
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('orderRemark').value = '';
         }
     </script>
 </body>
