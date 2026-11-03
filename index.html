@@ -1,9 +1,15 @@
+這就幫您把最靈魂的「客製化口味勾選（加辣、加生蒜、加蔥花、加九層塔）」與彈出視窗功能補回來！
+
+請直接將下方這段**包含客製化互動視窗的完整 66 道惡搞鹽酥雞程式碼**完整複製，貼回您 GitHub 倉庫最外層的 `index.html` 檔案中覆蓋儲存：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日日胖，肥胖加油站點餐系統</title>
+    <!-- 引入 Noto Serif TC 字體呈現日系紙本 Zine 風格 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script>
@@ -28,19 +34,29 @@
         }
     </script>
     <style>
-        body { background-color: #F4F1EA; color: #1A1918; font-family: 'Noto Serif TC', serif; }
+        body {
+            background-color: #F4F1EA;
+            color: #1A1918;
+            font-family: 'Noto Serif TC', serif;
+        }
         .zine-border { border: 2px solid #1A1918; }
         .zine-border-b { border-bottom: 2px solid #1A1918; }
         .zine-border-r { border-right: 2px solid #1A1918; }
         .zine-shadow { box-shadow: 4px 4px 0px #1A1918; }
         .zine-shadow-sm { box-shadow: 2px 2px 0px #1A1918; }
-        .stamp { display: inline-block; padding: 0.15rem 0.5rem; border: 2px solid #D32F2F; color: #D32F2F; font-weight: 900; text-transform: uppercase; transform: rotate(-3deg); font-size: 0.75rem; }
+        .stamp {
+            display: inline-block; padding: 0.15rem 0.5rem; border: 2px solid #D32F2F;
+            color: #D32F2F; font-weight: 900; text-transform: uppercase;
+            transform: rotate(-3deg); font-size: 0.75rem; letter-spacing: 0.05em;
+        }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F4F1EA; border-left: 2px solid #1A1918; }
         ::-webkit-scrollbar-thumb { background: #1A1918; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col selection:bg-zine-accent selection:text-white">
+
+    <!-- 頂部公告 / 標題列 -->
     <header class="zine-border-b bg-zine-paper sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-2">
             <div class="flex items-center gap-3">
@@ -54,7 +70,11 @@
             </div>
         </div>
     </header>
+
+    <!-- 主體內容區 (雙欄 Layout) -->
     <main class="max-w-7xl mx-auto w-full flex-grow grid grid-cols-1 lg:grid-cols-12">
+        
+        <!-- 左側：66道鹽酥雞攤菜單區 (佔 8 欄) -->
         <div class="lg:col-span-8 p-4 md:p-6 zine-border-r flex flex-col">
             <div class="mb-6 flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-grow">
@@ -69,12 +89,16 @@
                     <button onclick="filterCategory('sauce')" class="cat-btn zine-border px-3 py-2 bg-white font-bold text-xs uppercase cursor-pointer">獨門秘醬刷烤</button>
                 </div>
             </div>
+
             <div class="flex justify-between items-center pb-2 zine-border-b mb-4 font-mono text-xs text-zine-muted">
                 <span id="itemCountDisplay">載入中共 66 道品項...</span>
-                <span>[ 點擊品項加入點餐傳票 ]</span>
+                <span>[ 點擊品項即可客製化口味與配料 ]</span>
             </div>
+
             <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
+
+        <!-- 右側：點餐傳票 / 購物車區 (佔 4 欄) -->
         <div class="lg:col-span-4 bg-white p-4 md:p-6 flex flex-col justify-between">
             <div>
                 <div class="zine-border-b pb-3 mb-4 flex justify-between items-center">
@@ -85,23 +109,85 @@
                     <div class="text-center py-8 text-zine-muted font-mono text-sm border-2 border-dashed border-zinc-300">目前傳票空空如也<br>趕快點一份比臉還大的雞排吧！</div>
                 </div>
             </div>
+
             <div class="border-t-2 border-zine-dark pt-4 mt-auto">
                 <div class="space-y-3 mb-4">
-                    <div><label class="block text-xs font-mono font-bold mb-1">取餐人姓名 *</label><input type="text" id="customerName" placeholder="例如：快樂肥宅" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                    <div><label class="block text-xs font-mono font-bold mb-1">取餐人姓名 / 綽號 *</label><input type="text" id="customerName" placeholder="例如：快樂肥宅" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
                     <div><label class="block text-xs font-mono font-bold mb-1">聯絡電話 *</label><input type="tel" id="customerPhone" placeholder="0912-345-678" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
-                    <div><label class="block text-xs font-mono font-bold mb-1">備註事項</label><input type="text" id="orderRemark" placeholder="老闆我要蒜頭加爆..." class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                    <div><label class="block text-xs font-mono font-bold mb-1">整體備註事項</label><input type="text" id="orderRemark" placeholder="例如：趕時間、醬汁另外裝..." class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
                 </div>
                 <div class="bg-zine-paper zine-border p-3 mb-4 flex justify-between items-center font-mono">
                     <span class="font-bold text-sm">總計金額：</span>
                     <span id="cartTotalPrice" class="text-xl font-black text-zine-accent">$0 NTD</span>
                 </div>
-                <button onclick="submitOrder()" class="w-full zine-border zine-shadow bg-zine-dark text-zine-paper py-3 font-black text-sm uppercase tracking-widest hover:bg-zine-accent cursor-pointer">🚀 送出訂單傳票</button>
+                <button onclick="submitOrder()" class="w-full zine-border zine-shadow bg-zine-dark text-zine-paper py-3 font-black text-sm uppercase tracking-widest hover:bg-zine-accent cursor-pointer">🚀 確認無誤，送出訂單傳票</button>
             </div>
         </div>
     </main>
-    <footer class="zine-border-t bg-zine-paper py-4 text-center font-mono text-xs text-zine-muted">
-        <p>© 2026 日日胖 ｜ 肥胖加油站系統 ── 讓熱量再次偉大</p>
-    </footer>
+
+    <!-- 口味客製化互動視窗 (Modal) -->
+    <div id="customModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-zine-paper zine-border zine-shadow max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-start border-b-2 border-zine-dark pb-2">
+                <div>
+                    <span class="text-[10px] font-mono bg-zine-dark text-white px-1.5 py-0.5">CUSTOMIZE</span>
+                    <h3 id="modalItemName" class="text-lg font-black mt-1">餐點名稱</h3>
+                </div>
+                <button onclick="closeModal()" class="zine-border px-2 py-0.5 text-xs font-mono bg-white font-bold cursor-pointer hover:bg-zinc-200">✕ 關閉</button>
+            </div>
+
+            <div>
+                <label class="block text-xs font-mono font-bold mb-2">01. 撒粉與調味選擇</label>
+                <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="radio" name="flavor" value="胡椒、甘梅" checked class="accent-zine-accent"> 胡椒、甘梅
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="radio" name="flavor" value="胡椒、原味" class="accent-zine-accent"> 胡椒、原味
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="radio" name="flavor" value="胡椒、辣味" class="accent-zine-accent"> 胡椒、辣味
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="radio" name="flavor" value="獨門醬燒" class="accent-zine-accent"> 獨門醬燒
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-mono font-bold mb-2">02. 辛香配料勾選</label>
+                <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="checkbox" id="optSpicy" value="加辣" class="accent-zine-accent"> 加辣 (Spicy)
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="checkbox" id="optGarlic" value="加蒜" class="accent-zine-accent"> 加生蒜 (Garlic)
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="checkbox" id="optGreen" value="加蔥" class="accent-zine-accent"> 加蔥花 (Scallion)
+                    </label>
+                    <label class="zine-border bg-white p-2 flex items-center gap-2 cursor-pointer hover:bg-zinc-50">
+                        <input type="checkbox" id="optBasil" value="加九層塔" checked class="accent-zine-accent"> 加九層塔 (Basil)
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-mono font-bold mb-2">03. 點購份數</label>
+                <div class="flex items-center gap-3 font-mono">
+                    <button onclick="adjustModalQty(-1)" class="zine-border bg-white w-8 h-8 font-bold text-sm cursor-pointer hover:bg-zinc-200">-</button>
+                    <span id="modalQty" class="font-black text-base w-8 text-center">1</span>
+                    <button onclick="adjustModalQty(1)" class="zine-border bg-white w-8 h-8 font-bold text-sm cursor-pointer hover:bg-zinc-200">+</button>
+                </div>
+            </div>
+
+            <button onclick="confirmAddToCart()" class="w-full zine-border zine-shadow-sm bg-zine-dark text-zine-paper py-2.5 font-bold text-xs uppercase tracking-widest hover:bg-zine-accent cursor-pointer">
+                [ + 確認寫入點餐傳票 ]
+            </button>
+        </div>
+    </div>
+
+    <!-- 設定 Apps Script 網址的 Modal -->
     <div id="configModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-zine-paper zine-border zine-shadow max-w-md w-full p-6">
             <h3 class="text-lg font-black mb-2 uppercase">⚙️ 設定 Google 試算表 Webhook</h3>
@@ -112,6 +198,8 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript 邏輯：66道搞笑菜單與客製化購物車系統 -->
     <script>
         const menuItems = [
             { id: 1, name: "比臉還大黃金雞排", price: 85, category: "chicken", desc: "減肥永遠是明天的事，先啃再說。", tag: "罪惡之首" },
@@ -184,6 +272,8 @@
 
         let cart = [];
         let currentCategory = 'all';
+        let currentSelectedItem = null;
+        let currentModalQty = 1;
         let gasWebhookUrl = localStorage.getItem('gas_webhook_url') || '';
 
         window.onload = function() {
@@ -200,7 +290,7 @@
                 return;
             }
             grid.innerHTML = items.map(item => `
-                <div class="zine-border bg-white p-4 flex flex-col justify-between zine-shadow-sm">
+                <div class="zine-border bg-white p-4 flex flex-col justify-between zine-shadow-sm hover:-translate-y-0.5 transition-transform">
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-mono text-xs font-bold bg-zine-paper px-2 py-0.5 zine-border">#${item.id < 10 ? '0' + item.id : item.id}</span>
@@ -211,7 +301,9 @@
                     </div>
                     <div class="flex justify-between items-center pt-3 border-t border-dashed border-zinc-200 mt-2">
                         <span class="font-mono font-black text-zine-accent text-lg">$${item.price} <span class="text-xs text-zine-dark font-normal">NTD</span></span>
-                        <button onclick="addToCart(${item.id})" class="zine-border px-3 py-1 bg-zine-paper hover:bg-zine-dark hover:text-zine-paper font-mono text-xs font-bold cursor-pointer">+ 加入傳票</button>
+                        <button onclick="openCustomModal(${item.id})" class="zine-border px-3 py-1 bg-zine-paper hover:bg-zine-dark hover:text-zine-paper font-mono text-xs font-bold cursor-pointer transition-all">
+                            + 選擇口味
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -238,18 +330,75 @@
             renderMenu(filtered);
         }
 
-        function addToCart(id) {
-            const item = menuItems.find(i => i.id === id);
-            const existing = cart.find(c => c.id === id);
-            if(existing) { existing.qty++; } else { cart.push({ ...item, qty: 1 }); }
+        // 開啟客製化互動視窗
+        function openCustomModal(id) {
+            currentSelectedItem = menuItems.find(i => i.id === id);
+            if(!currentSelectedItem) return;
+
+            currentModalQty = 1;
+            document.getElementById('modalItemName').innerText = currentSelectedItem.name;
+            document.getElementById('modalQty').innerText = currentModalQty;
+
+            // 預設選項
+            document.querySelector('input[name="flavor"][value="胡椒、甘梅"]').checked = true;
+            document.getElementById('optSpicy').checked = false;
+            document.getElementById('optGarlic').checked = false;
+            document.getElementById('optGreen').checked = false;
+            document.getElementById('optBasil').checked = true;
+
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function adjustModalQty(delta) {
+            currentModalQty += delta;
+            if(currentModalQty < 1) currentModalQty = 1;
+            if(currentModalQty > 20) currentModalQty = 20;
+            document.getElementById('modalQty').innerText = currentModalQty;
+        }
+
+        // 確認加入購物車（包含口味與配料）
+        function confirmAddToCart() {
+            if(!currentSelectedItem) return;
+
+            const flavor = document.querySelector('input[name="flavor"]:checked').value;
+            const extras = [];
+            if(document.getElementById('optSpicy').checked) extras.push('加辣');
+            if(document.getElementById('optGarlic').checked) extras.push('加蒜');
+            if(document.getElementById('optGreen').checked) extras.push('加蔥');
+            if(document.getElementById('optBasil').checked) extras.push('加九層塔');
+
+            const cartKey = `${currentSelectedItem.id}-${flavor}-${extras.sort().join('-')}`;
+            const existing = cart.find(c => c.cartKey === cartKey);
+
+            if(existing) {
+                existing.qty += currentModalQty;
+            } else {
+                cart.push({
+                    cartKey: cartKey,
+                    id: currentSelectedItem.id,
+                    name: currentSelectedItem.name,
+                    price: currentSelectedItem.price,
+                    flavor: flavor,
+                    extras: extras,
+                    qty: currentModalQty
+                });
+            }
+
+            closeModal();
             updateCartUI();
         }
 
-        function changeQty(id, delta) {
-            const item = cart.find(c => c.id === id);
+        function changeCartQty(cartKey, delta) {
+            const item = cart.find(c => c.cartKey === cartKey);
             if(item) {
                 item.qty += delta;
-                if(item.qty <= 0) { cart = cart.filter(c => c.id !== id); }
+                if(item.qty <= 0) {
+                    cart = cart.filter(c => c.cartKey !== cartKey);
+                }
             }
             updateCartUI();
         }
@@ -260,19 +409,27 @@
             const totalEl = document.getElementById('cartTotalPrice');
             const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
             const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
             countEl.innerText = `${totalQty} 項`;
             totalEl.innerText = `$${totalPrice} NTD`;
+
             if(cart.length === 0) {
                 listEl.innerHTML = `<div class="text-center py-8 text-zine-muted font-mono text-sm border-2 border-dashed border-zinc-300">目前傳票空空如也<br>趕快點一份比臉還大的雞排吧！</div>`;
                 return;
             }
+
             listEl.innerHTML = cart.map(item => `
                 <div class="zine-border bg-zine-paper p-3 flex justify-between items-center text-sm">
-                    <div class="pr-2"><div class="font-bold line-clamp-1">${item.name}</div><div class="font-mono text-xs text-zine-accent">$${item.price} × ${item.qty}</div></div>
-                    <div class="flex items-center gap-1.5 font-mono">
-                        <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer">-</button>
+                    <div class="pr-2">
+                        <div class="font-bold line-clamp-1">${item.name}</div>
+                        <div class="font-mono text-xs text-zine-muted">口味: ${item.flavor}</div>
+                        ${item.extras.length > 0 ? `<div class="font-mono text-xs text-zine-accent">配料: ${item.extras.join(', ')}</div>` : ''}
+                        <div class="font-mono text-xs font-bold text-zine-accent mt-1">$${item.price} × ${item.qty} = $${item.price * item.qty}</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 font-mono shrink-0">
+                        <button onclick="changeCartQty('${item.cartKey}', -1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer hover:bg-zinc-200">-</button>
                         <span class="w-6 text-center font-bold text-xs">${item.qty}</span>
-                        <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer">+</button>
+                        <button onclick="changeCartQty('${item.cartKey}', 1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer hover:bg-zinc-200">+</button>
                     </div>
                 </div>
             `).join('');
@@ -291,15 +448,27 @@
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             const remark = document.getElementById('orderRemark').value.trim();
+
             if(!name || !phone) { alert('⚠️ 請填寫取餐人姓名與聯絡電話！'); return; }
             if(cart.length === 0) { alert('⚠️ 您的傳票是空的！'); return; }
+
             const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const orderDetails = cart.map(i => `${i.name} x${i.qty}`).join(', ');
-            const orderData = { name, phone, items: orderDetails, total: totalPrice, remark: remark || '無', timestamp: new Date().toLocaleString() };
+            const orderDetails = cart.map(i => `${i.name} x${i.qty} (${i.flavor}${i.extras.length ? '/' + i.extras.join(',') : ''})`).join('； ');
+
+            const orderData = {
+                name: name,
+                phone: phone,
+                items: orderDetails,
+                total: totalPrice,
+                remark: remark || '無',
+                timestamp: new Date().toLocaleString()
+            };
+
             if(!gasWebhookUrl) {
-                alert(`🎉 模擬訂單送出成功！\n姓名：${name}\n品項：${orderDetails}\n總金額：$${totalPrice} NTD`);
+                alert(`🎉 模擬訂單送出成功！\n\n姓名：${name}\n電話：${phone}\n品項：\n${orderDetails}\n總金額：$${totalPrice} NTD`);
                 cart = []; updateCartUI(); return;
             }
+
             try {
                 await fetch(gasWebhookUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
                 alert(`🚀 訂單已成功送出並同步至 Google 試算表！`);
@@ -309,3 +478,5 @@
     </script>
 </body>
 </html>
+
+```
