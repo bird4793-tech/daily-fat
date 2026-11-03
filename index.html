@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日日胖，肥胖加油站點餐系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Noto Serif TC"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        zine: {
+                            paper: '#F4F1EA',
+                            dark: '#1A1918',
+                            accent: '#D32F2F',
+                            muted: '#78716C',
+                            border: '#1A1918',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F4F1EA; color: #1A1918; font-family: 'Noto Serif TC', serif; }
+        .zine-border { border: 2px solid #1A1918; }
+        .zine-border-b { border-bottom: 2px solid #1A1918; }
+        .zine-border-r { border-right: 2px solid #1A1918; }
+        .zine-shadow { box-shadow: 4px 4px 0px #1A1918; }
+        .zine-shadow-sm { box-shadow: 2px 2px 0px #1A1918; }
+        .stamp { display: inline-block; padding: 0.15rem 0.5rem; border: 2px solid #D32F2F; color: #D32F2F; font-weight: 900; text-transform: uppercase; transform: rotate(-3deg); font-size: 0.75rem; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F4F1EA; border-left: 2px solid #1A1918; }
+        ::-webkit-scrollbar-thumb { background: #1A1918; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="zine-border-b bg-zine-paper sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-3">
+                <span class="stamp">VOL. 01</span>
+                <h1 class="text-2xl font-black tracking-wider uppercase">日日胖 ｜ 肥胖加油站</h1>
+                <span class="text-xs font-mono bg-zine-dark text-zine-paper px-2 py-0.5">SALTED CHICKEN STATION</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm font-mono">
+                <button onclick="openConfigModal()" class="zine-border zine-shadow-sm px-3 py-1 bg-white hover:bg-zine-dark hover:text-white transition-all cursor-pointer font-bold">⚙️ 試算表連動設定</button>
+                <div class="zine-border px-3 py-1 bg-white"><span>營業時間：16:00 - 23:30</span></div>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-7xl mx-auto w-full flex-grow grid grid-cols-1 lg:grid-cols-12">
+        <div class="lg:col-span-8 p-4 md:p-6 zine-border-r flex flex-col">
+            <div class="mb-6 flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <input type="text" id="searchInput" placeholder="搜尋鹹酥雞、雞排或搞笑代號..." class="w-full zine-border bg-white px-4 py-2 font-mono text-sm focus:outline-none">
+                    <span class="absolute right-3 top-2.5 text-xs font-mono text-zine-muted">🔍</span>
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-2 sm:pb-0" id="categoryBtns">
+                    <button onclick="filterCategory('all')" class="cat-btn zine-border px-3 py-2 bg-zine-dark text-zine-paper font-bold text-xs uppercase cursor-pointer">全部品項</button>
+                    <button onclick="filterCategory('chicken')" class="cat-btn zine-border px-3 py-2 bg-white font-bold text-xs uppercase cursor-pointer">招牌雞肉與魷魚</button>
+                    <button onclick="filterCategory('fried')" class="cat-btn zine-border px-3 py-2 bg-white font-bold text-xs uppercase cursor-pointer">傳統點心炸物</button>
+                    <button onclick="filterCategory('veg')" class="cat-btn zine-border px-3 py-2 bg-white font-bold text-xs uppercase cursor-pointer">季節鮮蔬與小點</button>
+                    <button onclick="filterCategory('sauce')" class="cat-btn zine-border px-3 py-2 bg-white font-bold text-xs uppercase cursor-pointer">獨門秘醬刷烤</button>
+                </div>
+            </div>
+            <div class="flex justify-between items-center pb-2 zine-border-b mb-4 font-mono text-xs text-zine-muted">
+                <span id="itemCountDisplay">載入中共 66 道品項...</span>
+                <span>[ 點擊品項加入點餐傳票 ]</span>
+            </div>
+            <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+        <div class="lg:col-span-4 bg-white p-4 md:p-6 flex flex-col justify-between">
+            <div>
+                <div class="zine-border-b pb-3 mb-4 flex justify-between items-center">
+                    <h2 class="text-lg font-black tracking-wider uppercase flex items-center gap-2"><span>📋</span> 點餐傳票</h2>
+                    <span id="cartItemCount" class="font-mono text-xs bg-zine-accent text-white px-2 py-0.5 font-bold">0 項</span>
+                </div>
+                <div id="cartItemsList" class="space-y-3 max-h-[40vh] overflow-y-auto pr-1 mb-4">
+                    <div class="text-center py-8 text-zine-muted font-mono text-sm border-2 border-dashed border-zinc-300">目前傳票空空如也<br>趕快點一份比臉還大的雞排吧！</div>
+                </div>
+            </div>
+            <div class="border-t-2 border-zine-dark pt-4 mt-auto">
+                <div class="space-y-3 mb-4">
+                    <div><label class="block text-xs font-mono font-bold mb-1">取餐人姓名 *</label><input type="text" id="customerName" placeholder="例如：快樂肥宅" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                    <div><label class="block text-xs font-mono font-bold mb-1">聯絡電話 *</label><input type="tel" id="customerPhone" placeholder="0912-345-678" class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                    <div><label class="block text-xs font-mono font-bold mb-1">備註事項</label><input type="text" id="orderRemark" placeholder="老闆我要蒜頭加爆..." class="w-full zine-border px-3 py-2 text-sm font-mono"></div>
+                </div>
+                <div class="bg-zine-paper zine-border p-3 mb-4 flex justify-between items-center font-mono">
+                    <span class="font-bold text-sm">總計金額：</span>
+                    <span id="cartTotalPrice" class="text-xl font-black text-zine-accent">$0 NTD</span>
+                </div>
+                <button onclick="submitOrder()" class="w-full zine-border zine-shadow bg-zine-dark text-zine-paper py-3 font-black text-sm uppercase tracking-widest hover:bg-zine-accent cursor-pointer">🚀 送出訂單傳票</button>
+            </div>
+        </div>
+    </main>
+    <footer class="zine-border-t bg-zine-paper py-4 text-center font-mono text-xs text-zine-muted">
+        <p>© 2026 日日胖 ｜ 肥胖加油站系統 ── 讓熱量再次偉大</p>
+    </footer>
+    <div id="configModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-zine-paper zine-border zine-shadow max-w-md w-full p-6">
+            <h3 class="text-lg font-black mb-2 uppercase">⚙️ 設定 Google 試算表 Webhook</h3>
+            <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full zine-border bg-white p-2 text-xs font-mono mb-4">
+            <div class="flex justify-end gap-2 font-mono">
+                <button onclick="closeConfigModal()" class="zine-border px-4 py-2 bg-white text-xs font-bold cursor-pointer">取消</button>
+                <button onclick="saveGasConfig()" class="zine-border zine-shadow-sm px-4 py-2 bg-zine-dark text-zine-paper text-xs font-bold cursor-pointer">儲存設定</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const menuItems = [
+            { id: 1, name: "比臉還大黃金雞排", price: 85, category: "chicken", desc: "減肥永遠是明天的事，先啃再說。", tag: "罪惡之首" },
+            { id: 2, name: "懶人救星無骨腿排", price: 80, category: "chicken", desc: "連吐骨頭都懶的吃貨必點。", tag: "人氣" },
+            { id: 3, name: "吵死鄰居卡啦雞肉排", price: 75, category: "chicken", desc: "咬下去半條街都聽得到脆度。", tag: "酥脆" },
+            { id: 4, name: "靈魂伴侶無骨鹽酥雞", price: 60, category: "chicken", desc: "沒點這道等於白來，小份過癮大份滿足。", tag: "快樂泉源" },
+            { id: 5, name: "牙醫認證考驗雞軟骨", price: 70, category: "chicken", desc: "嚼到下巴微酸的極致爽感。", tag: "嚼勁" },
+            { id: 6, name: "劈腿八隻腳鹽酥魷魚足", price: 65, category: "chicken", desc: "前任的腳都沒這麼Q彈有嚼勁。", tag: "超Q彈" },
+            { id: 7, name: "健美教練棒棒腿", price: 45, category: "chicken", desc: "這隻雞生前有練深蹲，肉質結實。", tag: "扎實" },
+            { id: 8, name: "帶你飛上天調味雞翅", price: 35, category: "chicken", desc: "吮指回味到連手指都想吞下去。", tag: "吮指" },
+            { id: 9, name: "阿嬤塞爆糯米大腸圈", price: 40, category: "chicken", desc: "有一種飽，叫阿嬤怕你沒吃飽。", tag: "古早味" },
+            { id: 10, name: "熱量炸彈起士豬肉堡", price: 50, category: "chicken", desc: "濃郁爆漿起司，體重計在角落哭泣。", tag: "爆漿" },
+            { id: 11, name: "膽固醇警報香脆雞皮", price: 50, category: "chicken", desc: "健檢報告紅字製造機，但真的太香了。", tag: "極罪惡" },
+            { id: 12, name: "裝清新檸檬雞柳條", price: 55, category: "chicken", desc: "加了檸檬感覺吃起來就不會胖(誤)。", tag: "微酸" },
+            { id: 13, name: "海龍王的報復大魷魚", price: 120, category: "chicken", desc: "整隻現炸霸氣外露，下酒神物。", tag: "限量霸主" },
+            { id: 14, name: "自我安慰生菜沙拉醬燒", price: 60, category: "chicken", desc: "炸物配點生菜，熱量自動歸零。", tag: "清爽" },
+            { id: 15, name: "肚子滿滿黃金柳葉魚", price: 45, category: "fried", desc: "魚生比你的錢包還飽滿，卵多到爆。", tag: "爆卵" },
+            { id: 16, name: "假裝是豆腐的百頁豆腐", price: 30, category: "fried", desc: "營養師最怕、但鹽酥雞攤最愛的空氣感神物。", tag: "軟嫩" },
+            { id: 17, name: "外冷內熱傲嬌米血糕", price: 30, category: "fried", desc: "外表炸得微硬，內心其實軟Q得要命。", tag: "Q彈" },
+            { id: 18, name: "過年剩下的台式蘿蔔糕", price: 35, category: "fried", desc: "開玩笑的！天天新鮮現炸外酥內嫩。", tag: "外酥內嫩" },
+            { id: 19, name: "阿公最愛鹹芋粿巧", price: 35, category: "fried", desc: "古早味芋頭香，咬下去滿滿時代眼淚。", tag: "芋頭控" },
+            { id: 20, name: "螞蟻人專屬甜芋頭簽", price: 30, category: "fried", desc: "甜甜脆脆，咀嚼肌的最佳訓練夥伴。", tag: "香甜" },
+            { id: 21, name: "打香腸必備一口香腸", price: 40, category: "fried", desc: "一口一顆，不知不覺整包消失。", tag: "涮嘴" },
+            { id: 22, name: "沒去過北海道的魚豆腐", price: 35, category: "fried", desc: "雖然沒坐過飛機，但嫩度絕對頭等艙。", tag: "滑順" },
+            { id: 23, name: "好事會花生紅蔥米腸", price: 40, category: "fried", desc: "香氣四溢，吃完立馬交好運。", tag: "花生香" },
+            { id: 24, name: "一點都不辣的招牌甜不辣", price: 35, category: "fried", desc: "炸得澎澎的台灣國民驕傲。", tag: "不點後悔" },
+            { id: 25, name: "呼拉圈縮小版洋蔥圈", price: 45, category: "fried", desc: "圈住你的胃，順便圈住你的腰圍。", tag: "美式" },
+            { id: 26, name: "火鍋界爭議人物炸芋頭", price: 40, category: "fried", desc: "不丟火鍋改丟油鍋，香酥到反芋頭派都投降。", tag: "香酥" },
+            { id: 27, name: "麥當勞看不到的多味薯條", price: 40, category: "fried", desc: "高達多種口味任選，選擇困難症慎入。", tag: "經典" },
+            { id: 28, name: "咬下去會噴水杏鮑菇", price: 50, category: "veg", desc: "小心燙口，比偶像劇還會噴汁。", tag: "爆汁警告" },
+            { id: 29, name: "黑心爆漿西北芝麻燒", price: 35, category: "veg", desc: "甜口味・吃完記得照鏡子看牙齒有沒有黑。", tag: "甜滋滋" },
+            { id: 30, name: "蠟筆小新天敵炸青椒", price: 45, category: "veg", desc: "大人味限定，小新看到連夜逃跑。", tag: "時價" },
+            { id: 31, name: "吸油小精靈脆皮四季豆", price: 45, category: "veg", desc: "以為吃菜很健康？其實精華美味全吸飽了。", tag: "人氣蔬食" },
+            { id: 32, name: "嫌老闆給不夠單點九層塔", price: 20, category: "veg", desc: "九層塔狂熱份子專用，整包給你吃到爽。", tag: "香氣滿點" },
+            { id: 33, name: "月底救星銅板炸豆干", price: 25, category: "veg", desc: "月底吃土時的最佳蛋白質來源。", tag: "銅板價" },
+            { id: 34, name: "童年回憶殺甜芋頭餅", price: 25, category: "veg", desc: "夾心酥脆，一枚銅幣的簡單快樂。", tag: "懷舊" },
+            { id: 35, name: "早餐店打工仔四角薯餅", price: 30, category: "veg", desc: "早上沒吃到？宵夜場繼續補齊。", tag: "酥脆" },
+            { id: 36, name: "透明系少女QQ水晶餃", price: 30, category: "veg", desc: "用炸的水晶餃！外酥內Q驚喜感滿分。", tag: "Q彈" },
+            { id: 37, name: "夜市扛壩子大熱狗", price: 30, category: "veg", desc: "不管幾歲，看到炸熱狗還是會忍不住。", tag: "童趣" },
+            { id: 38, name: "偽裝成青椒的糯米椒", price: 55, category: "veg", desc: "長得像辣椒卻不辣，充滿椒香的高手。", tag: "微辣香" },
+            { id: 39, name: "不附糖醋醬的麥克雞塊", price: 55, category: "veg", desc: "撒上傳統椒鹽別有一番風味。", tag: "經典" },
+            { id: 40, name: "台灣蕃薯魂地瓜條", price: 45, category: "veg", desc: "強烈建議搭配甘梅粉，絕配組合！", tag: "甘梅絕配" },
+            { id: 41, name: "黏住你心房日式麻糬", price: 40, category: "veg", desc: "花生、煉乳、胡椒任選，軟糯香甜。", tag: "甜點系" },
+            { id: 42, name: "煉乳淋爆銀絲卷", price: 40, category: "veg", desc: "邪惡度破表的完美收尾甜點。", tag: "極甜" },
+            { id: 43, name: "性感翹臀醬汁雞屁股", price: 40, category: "sauce", desc: "七里香刷上獨門秘醬，香到隔壁桌流口水。", tag: "老饕愛" },
+            { id: 44, name: "玻璃心勿點醬汁雞心", price: 35, category: "sauce", desc: "Q彈入味，吃一串補一顆強心臟。", tag: "入味" },
+            { id: 45, name: "練咬肌專用醬汁雞胗", price: 35, category: "sauce", desc: "越嚼越香，配啤酒追劇可以啃半小時。", tag: "下酒" },
+            { id: 46, name: "長頸鹿羨慕醬汁雞脖子", price: 30, category: "sauce", desc: "老饕才懂的啃骨頭樂趣，秘醬完全滲透。", tag: "吮指" },
+            { id: 47, name: "小朋友才選醬汁鑫鑫腸", price: 25, category: "sauce", desc: "刷醬版一口一個瞬間秒殺。", tag: "童趣" },
+            { id: 48, name: "九層塔談戀愛醬汁花枝丸", price: 35, category: "sauce", desc: "海味與九層塔在嘴裡放煙火。", tag: "海味" },
+            { id: 49, name: "外國人嚇傻眼醬汁皮蛋", price: 50, category: "sauce", desc: "最怪但台灣人愛死的刷醬神作。", tag: "暗黑料理" },
+            { id: 50, name: "乒乓球轉世醬汁花枝丸", price: 35, category: "sauce", desc: "彈牙到掉在地上可能會彈起來。", tag: "Q彈" },
+            { id: 51, name: "身價暴漲醬汁黃金魚丸", price: 30, category: "sauce", desc: "炸得金黃再刷上靈統醬汁。", tag: "鮮甜" },
+            { id: 52, name: "游得很快醬汁鱘魚丸", price: 30, category: "sauce", desc: "鮮甜多汁，丸子界的資優生。", tag: "丸子王" },
+            { id: 53, name: "風城名產醬汁新竹小貢丸", price: 35, category: "sauce", desc: "紮實肉感，不用去新竹也能吃到。", tag: "扎實" },
+            { id: 54, name: "軟骨功大師醬汁蛋豆腐", price: 50, category: "sauce", desc: "外皮刷滿醬汁，裡面嫩到夾不起來。", tag: "超嫩" },
+            { id: 55, name: "海綿寶寶親戚醬汁小方干", price: 25, category: "sauce", desc: "方方正正，把獨門醬汁吸得一滴不剩。", tag: "吸汁" },
+            { id: 56, name: "長高版醬汁長甜不辣", price: 30, category: "sauce", desc: "刷醬派必點，Q彈鹹甜超唰嘴。", tag: "刷醬必點" },
+            { id: 57, name: "綠色爆炸頭醬汁綠花椰菜", price: 45, category: "sauce", desc: "爆炸頭造型完美吸附滿滿醬汁。", tag: "蔬菜類" },
+            { id: 58, name: "白髮魔女醬汁白花椰菜", price: 45, category: "sauce", desc: "清脆爽口與濃郁醬香的完美結合。", tag: "爽脆" },
+            { id: 59, name: "長不大的玉米醬汁玉米筍", price: 45, category: "sauce", desc: "清甜脆口，減輕吃炸物的罪惡感。", tag: "清甜" },
+            { id: 60, name: "高山來的朋友醬汁高麗菜", price: 45, category: "sauce", desc: "炸過再刷醬，比熱炒店還好吃。", tag: "熱炒風" },
+            { id: 61, name: "明天見醬汁金針菇", price: 45, category: "sauce", desc: "別號 See You Tomorrow，多汁美味。", tag: "多汁" },
+            { id: 62, name: "感動流淚醬汁大洋蔥", price: 40, category: "sauce", desc: "炸過後只剩鮮甜不嗆辣，好吃到想哭。", tag: "鮮甜" },
+            { id: 63, name: "刷滿牙縫醬汁甜玉米", price: 40, category: "sauce", desc: "準備好你的牙籤，鹹甜爆汁超推。", tag: "爆汁" },
+            { id: 64, name: "敷臉太浪費醬汁小黃瓜", price: 45, category: "sauce", desc: "爽脆解膩第一名，拿來吃比拿來敷臉更讚。", tag: "解膩" },
+            { id: 65, name: "美人腿誘惑醬汁筊白筍", price: 50, category: "sauce", desc: "鮮嫩多汁，吃了腿不知道會不會變美。", tag: "鮮嫩" },
+            { id: 66, name: "假裝在喝蔬果汁醬汁西洋芹", price: 40, category: "sauce", desc: "超清爽纖維質，吃完這份可以多點一塊雞排。", tag: "清纖維" }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+        let gasWebhookUrl = localStorage.getItem('gas_webhook_url') || '';
+
+        window.onload = function() {
+            renderMenu(menuItems);
+            updateCartUI();
+            if(gasWebhookUrl) { document.getElementById('gasUrlInput').value = gasWebhookUrl; }
+        };
+
+        function renderMenu(items) {
+            const grid = document.getElementById('menuGrid');
+            document.getElementById('itemCountDisplay').innerText = `顯示中 ${items.length} 道品項`;
+            if(items.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-center py-12 font-mono text-zine-muted">找不到符合條件的美味炸物...</div>`;
+                return;
+            }
+            grid.innerHTML = items.map(item => `
+                <div class="zine-border bg-white p-4 flex flex-col justify-between zine-shadow-sm">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-mono text-xs font-bold bg-zine-paper px-2 py-0.5 zine-border">#${item.id < 10 ? '0' + item.id : item.id}</span>
+                            <span class="stamp !text-[10px] !py-0 !px-1">${item.tag}</span>
+                        </div>
+                        <h3 class="font-black text-base mb-1">${item.name}</h3>
+                        <p class="text-xs text-zine-muted mb-3 line-clamp-2">${item.desc}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t border-dashed border-zinc-200 mt-2">
+                        <span class="font-mono font-black text-zine-accent text-lg">$${item.price} <span class="text-xs text-zine-dark font-normal">NTD</span></span>
+                        <button onclick="addToCart(${item.id})" class="zine-border px-3 py-1 bg-zine-paper hover:bg-zine-dark hover:text-zine-paper font-mono text-xs font-bold cursor-pointer">+ 加入傳票</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-zine-dark', 'text-zine-paper');
+                btn.classList.add('bg-white');
+            });
+            event.target.classList.remove('bg-white');
+            event.target.classList.add('bg-zine-dark', 'text-zine-paper');
+            filterMenu();
+        }
+
+        function filterMenu() {
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            const filtered = menuItems.filter(item => {
+                const matchCategory = currentCategory === 'all' || item.category === currentCategory;
+                const matchKeyword = item.name.toLowerCase().includes(keyword) || item.desc.toLowerCase().includes(keyword) || item.id.toString() === keyword;
+                return matchCategory && matchKeyword;
+            });
+            renderMenu(filtered);
+        }
+
+        function addToCart(id) {
+            const item = menuItems.find(i => i.id === id);
+            const existing = cart.find(c => c.id === id);
+            if(existing) { existing.qty++; } else { cart.push({ ...item, qty: 1 }); }
+            updateCartUI();
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) { cart = cart.filter(c => c.id !== id); }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const listEl = document.getElementById('cartItemsList');
+            const countEl = document.getElementById('cartItemCount');
+            const totalEl = document.getElementById('cartTotalPrice');
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            countEl.innerText = `${totalQty} 項`;
+            totalEl.innerText = `$${totalPrice} NTD`;
+            if(cart.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-8 text-zine-muted font-mono text-sm border-2 border-dashed border-zinc-300">目前傳票空空如也<br>趕快點一份比臉還大的雞排吧！</div>`;
+                return;
+            }
+            listEl.innerHTML = cart.map(item => `
+                <div class="zine-border bg-zine-paper p-3 flex justify-between items-center text-sm">
+                    <div class="pr-2"><div class="font-bold line-clamp-1">${item.name}</div><div class="font-mono text-xs text-zine-accent">$${item.price} × ${item.qty}</div></div>
+                    <div class="flex items-center gap-1.5 font-mono">
+                        <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer">-</button>
+                        <span class="w-6 text-center font-bold text-xs">${item.qty}</span>
+                        <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 zine-border bg-white flex items-center justify-center font-bold cursor-pointer">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
+        function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
+        function saveGasConfig() {
+            gasWebhookUrl = document.getElementById('gasUrlInput').value.trim();
+            localStorage.setItem('gas_webhook_url', gasWebhookUrl);
+            alert('✅ 試算表 Webhook 連結已儲存成功！');
+            closeConfigModal();
+        }
+
+        async function submitOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const remark = document.getElementById('orderRemark').value.trim();
+            if(!name || !phone) { alert('⚠️ 請填寫取餐人姓名與聯絡電話！'); return; }
+            if(cart.length === 0) { alert('⚠️ 您的傳票是空的！'); return; }
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const orderDetails = cart.map(i => `${i.name} x${i.qty}`).join(', ');
+            const orderData = { name, phone, items: orderDetails, total: totalPrice, remark: remark || '無', timestamp: new Date().toLocaleString() };
+            if(!gasWebhookUrl) {
+                alert(`🎉 模擬訂單送出成功！\n姓名：${name}\n品項：${orderDetails}\n總金額：$${totalPrice} NTD`);
+                cart = []; updateCartUI(); return;
+            }
+            try {
+                await fetch(gasWebhookUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+                alert(`🚀 訂單已成功送出並同步至 Google 試算表！`);
+                cart = []; updateCartUI();
+            } catch (error) { alert('❌ 傳票發送失敗，請檢查網路。'); }
+        }
+    </script>
+</body>
+</html>
